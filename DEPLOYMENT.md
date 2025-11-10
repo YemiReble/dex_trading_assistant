@@ -4,7 +4,7 @@
 
 1. **Clone and Setup**
    ```bash
-   cd dex-trading-assistant
+   cd dex_trading_assistant
    chmod +x start.sh
    ./start.sh
    ```
@@ -34,8 +34,8 @@
 
 1. **Build and Run**
    ```bash
-   docker build -t dex-trading-assistant .
-   docker run -p 8000:8000 dex-trading-assistant
+   docker build -t dex_trading_assistant .
+   docker run -p 8000:8000 dex_trading_assistant
    ```
 
 2. **Using Docker Compose**
@@ -67,8 +67,8 @@
 2. **Application Setup**
    ```bash
    # Clone repository
-   git clone <your-repo-url> dex-trading-assistant
-   cd dex-trading-assistant
+   git clone <your-repo-url> dex_trading_assistant
+   cd dex_trading_assistant
    
    # Create virtual environment
    python3 -m venv venv
@@ -125,9 +125,9 @@
    [Service]
    User=dextrading
    Group=dextrading
-   WorkingDirectory=/home/dextrading/dex-trading-assistant
-   Environment="PATH=/home/dextrading/dex-trading-assistant/venv/bin"
-   ExecStart=/home/dextrading/dex-trading-assistant/venv/bin/gunicorn --workers 3 --bind unix:/home/dextrading/dex-trading-assistant/dex_trading.sock dex_trading.wsgi:application
+   WorkingDirectory=/home/dextrading/dex_trading_assistant
+   Environment="PATH=/home/dextrading/dex_trading_assistant/venv/bin"
+   ExecStart=/home/dextrading/dex_trading_assistant/venv/bin/gunicorn --workers 3 --bind unix:/home/dextrading/dex_trading_assistant/dex_trading.sock dex_trading.wsgi:application
    
    [Install]
    WantedBy=multi-user.target
@@ -148,12 +148,12 @@
    
        location = /favicon.ico { access_log off; log_not_found off; }
        location /static/ {
-           root /home/dextrading/dex-trading-assistant;
+           root /home/dextrading/dex_trading_assistant;
        }
    
        location / {
            include proxy_params;
-           proxy_pass http://unix:/home/dextrading/dex-trading-assistant/dex_trading.sock;
+           proxy_pass http://unix:/home/dextrading/dex_trading_assistant/dex_trading.sock;
        }
    }
    EOF
@@ -179,7 +179,7 @@
    crontab -e
    
    # Add this line to update tokens every 5 minutes
-   */5 * * * * /home/dextrading/dex-trading-assistant/venv/bin/python /home/dextrading/dex-trading-assistant/manage.py update_tokens
+   */5 * * * * /home/dextrading/dex_trading_assistant/venv/bin/python /home/dextrading/dex_trading_assistant/manage.py update_tokens
    ```
 
 ## Environment Variables
@@ -223,7 +223,7 @@
 2. **Application Backup**
    ```bash
    # Backup application files
-   tar -czf dex_trading_backup_$(date +%Y%m%d).tar.gz /home/dextrading/dex-trading-assistant
+   tar -czf dex_trading_backup_$(date +%Y%m%d).tar.gz /home/dextrading/dex_trading_assistant
    ```
 
 ## Troubleshooting

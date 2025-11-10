@@ -68,9 +68,9 @@ Visit `http://127.0.0.1:8000` to access the application.
 ## Project Structure
 
 ```
-dex-trading-assistant/
+dex_trading_assistant/
 ├── dex_trading/           # Django project settings
-├── tokens/                # Main application
+├── dex_token/                # Main application
 │   ├── models.py         # Token data models
 │   ├── views.py          # Views and API endpoints
 │   ├── services.py       # Dexscreener API integration
@@ -154,10 +154,10 @@ DATABASES = {
 
 ```bash
 # Build image
-docker build -t dex-trading-assistant .
+docker build -t dex_trading_assistant .
 
 # Run container
-docker run -p 8000:8000 dex-trading-assistant
+docker run -p 8000:8000 dex_trading_assistant
 ```
 
 ### Manual Deployment
