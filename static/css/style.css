@@ -1,0 +1,85 @@
+/* Custom styles for DEX Trading Assistant */
+
+.light-theme {
+    background-color: #f8fafc;
+    color: #1a202c;
+}
+
+.light-theme .bg-gray-900 {
+    background-color: #f8fafc;
+}
+
+.light-theme .bg-gray-800 {
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .bg-gray-700 {
+    background-color: #f7fafc;
+}
+
+.light-theme .text-white {
+    color: #1a202c;
+}
+
+.light-theme .text-gray-400 {
+    color: #718096;
+}
+
+.light-theme .border-gray-700 {
+    border-color: #e2e8f0;
+}
+
+/* Loading animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Hover effects */
+.token-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.token-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive th,
+    .table-responsive td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}

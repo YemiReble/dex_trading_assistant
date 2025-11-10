@@ -1,0 +1,6 @@
+venv
+dex_token/__pycache__/*
+dex_trading/__pycache__/*
+dex_token/management/__pycache__/*
+dex_token/migrations/__pycache__/*
+dex_token/management/commands/__pycache__/*

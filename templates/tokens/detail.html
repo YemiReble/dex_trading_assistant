@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ token.name }} - DEX Trading Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            {% if token.image_url %}
+            <img src="{{ token.image_url }}" alt="{{ token.name }}" class="w-16 h-16 rounded-full">
+            {% endif %}
+            <div>
+                <h1 class="text-4xl font-bold">{{ token.name }}</h1>
+                <p class="text-gray-400 text-xl">{{ token.symbol }}</p>
+                {% if token.chain_id %}<p class="text-sm text-blue-400">{{ token.chain_id|upper }}</p>{% endif %}
+            </div>
+        </div>
+        <div class="text-right">
+            <p class="text-3xl font-bold">${{ token.price_usd|floatformat:6 }}</p>
+            <p class="{% if token.price_change_24h >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                {% if token.price_change_24h >= 0 %}+{% endif %}{{ token.price_change_24h|floatformat:2 }}% (24h)
+            </p>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-gray-400 text-sm mb-2">Market Cap</h3>
+            <p class="text-2xl font-bold">${{ token.market_cap|floatformat:0|intcomma }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-gray-400 text-sm mb-2">24h Volume</h3>
+            <p class="text-2xl font-bold">${{ token.volume_24h|floatformat:0|intcomma }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-gray-400 text-sm mb-2">Liquidity</h3>
+            <p class="text-2xl font-bold">${{ token.liquidity|floatformat:0|intcomma }}</p>
+        </div>
+        {% if token.fdv %}
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-gray-400 text-sm mb-2">FDV</h3>
+            <p class="text-2xl font-bold">${{ token.fdv|floatformat:0|intcomma }}</p>
+        </div>
+        {% endif %}
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-gray-400 text-sm mb-2">Analysis Score</h3>
+            <p class="text-2xl font-bold text-blue-400">{{ token.analysis_score }}/100</p>
+        </div>
+    </div>
+
+    <!-- Trading Activity -->
+    {% if token.buys_24h or token.sells_24h %}
+    <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold">24h Trading Activity</h2>
+            <button onclick="updateToken({{ token.id }})" 
+                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded flex items-center">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% if token.buys_24h %}
+            <div class="text-center">
+                <p class="text-gray-400 mb-2">Buys</p>
+                <p class="text-2xl font-bold text-green-400">{{ token.buys_24h }}</p>
+            </div>
+            {% endif %}
+            {% if token.sells_24h %}
+            <div class="text-center">
+                <p class="text-gray-400 mb-2">Sells</p>
+                <p class="text-2xl font-bold text-red-400">{{ token.sells_24h }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommendation Card -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">AI Recommendation</h2>
+                <span class="px-4 py-2 rounded-lg text-lg font-semibold
+                    {% if token.recommendation == 'BUY' %}bg-green-600
+                    {% elif token.recommendation == 'HOLD' %}bg-yellow-600
+                    {% else %}bg-red-600{% endif %}">
+                    {{ token.recommendation }}
+                </span>
+            </div>
+            <div class="text-right">
+                <p class="text-gray-400">Volatility Index</p>
+                <p class="text-xl font-bold">{{ token.volatility_index|floatformat:2 }}%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Changes -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">Price Performance</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <p class="text-gray-400 mb-2">1 Hour</p>
+                <p class="text-xl font-bold {% if token.price_change_1h >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {% if token.price_change_1h >= 0 %}+{% endif %}{{ token.price_change_1h|floatformat:2 }}%
+                </p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400 mb-2">24 Hours</p>
+                <p class="text-xl font-bold {% if token.price_change_24h >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {% if token.price_change_24h >= 0 %}+{% endif %}{{ token.price_change_24h|floatformat:2 }}%
+                </p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400 mb-2">7 Days</p>
+                <p class="text-xl font-bold {% if token.price_change_7d >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                    {% if token.price_change_7d >= 0 %}+{% endif %}{{ token.price_change_7d|floatformat:2 }}%
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Management -->
+    {% if token.recommendation == 'BUY' %}
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">Risk Management</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Stop Loss Level</h3>
+                <p class="text-xl text-red-400">${{ token.stop_loss_level|floatformat:6 }}</p>
+                <p class="text-gray-400 text-sm">10% below current price</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Suggested Position Size</h3>
+                <p class="text-xl text-green-400">{{ token.suggested_position_size }}%</p>
+                <p class="text-gray-400 text-sm">Of total portfolio</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Social Links & Website -->
+    {% if token.website_url or token.twitter_handle or token.telegram_handle %}
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">Links & Social Media</h2>
+        <div class="flex flex-wrap gap-4">
+            {% if token.website_url %}
+            <a href="{{ token.website_url }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded flex items-center">
+                <i class="fas fa-globe mr-2"></i>Website
+            </a>
+            {% endif %}
+            {% if token.twitter_handle %}
+            <a href="https://twitter.com/{{ token.twitter_handle }}" target="_blank" class="bg-blue-400 hover:bg-blue-500 px-4 py-2 rounded flex items-center">
+                <i class="fab fa-twitter mr-2"></i>Twitter
+            </a>
+            {% endif %}
+            {% if token.telegram_handle %}
+            <a href="https://t.me/{{ token.telegram_handle }}" target="_blank" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded flex items-center">
+                <i class="fab fa-telegram mr-2"></i>Telegram
+            </a>
+            {% endif %}
+            {% if token.discord_handle %}
+            <a href="https://discord.gg/{{ token.discord_handle }}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded flex items-center">
+                <i class="fab fa-discord mr-2"></i>Discord
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">Price Chart</h2>
+        <canvas id="priceChart" width="800" height="400"></canvas>
+    </div>
+
+    <!-- Token Details -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">Token Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-gray-400 mb-1">Pair Address</p>
+                <p class="font-mono text-sm break-all">{{ token.pair_address }}</p>
+            </div>
+            {% if token.token_address %}
+            <div>
+                <p class="text-gray-400 mb-1">Token Address</p>
+                <p class="font-mono text-sm break-all">{{ token.token_address }}</p>
+            </div>
+            {% endif %}
+            {% if token.dex_id %}
+            <div>
+                <p class="text-gray-400 mb-1">DEX</p>
+                <p>{{ token.dex_id|title }}</p>
+            </div>
+            {% endif %}
+            {% if token.pair_created_at %}
+            <div>
+                <p class="text-gray-400 mb-1">Pair Created</p>
+                <p>{{ token.pair_created_at|date:"M d, Y H:i" }}</p>
+            </div>
+            {% endif %}
+            <div>
+                <p class="text-gray-400 mb-1">Last Updated</p>
+                <p>{{ token.updated_at|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center">
+        <a href="{% url 'dex_token:explorer' %}" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Explorer
+        </a>
+    </div>
+</div>
+
+<script>
+    // Mock price chart
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    
+    // Generate mock price data
+    const generatePriceData = (basePrice, points = 24) => {
+        const data = [];
+        let price = basePrice;
+        for (let i = 0; i < points; i++) {
+            price += (Math.random() - 0.5) * price * 0.05; // 5% max change
+            data.push(price);
+        }
+        return data;
+    };
+
+    const priceData = generatePriceData({{ token.price_usd }}, 24);
+    const labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Price (USD)',
+                data: priceData,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: 'white',
+                        callback: function(value) {
+                            return '$' + value.toFixed(6);
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<script>
+function updateToken(tokenId) {
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+    button.disabled = true;
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    fetch(`/api/update-token/${tokenId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating token: ' + (data.error || 'Unknown error'));
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        alert('Error updating token: ' + error.message);
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+</script>
+{% endblock %}

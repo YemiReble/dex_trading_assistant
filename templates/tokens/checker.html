@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Token Checker - DEX Trading Assistant{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-4xl font-bold mb-4">Token Checker</h1>
+        <p class="text-gray-400">Search and analyze any token by name, symbol, or address</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <form method="GET" class="space-y-4">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" name="search" value="{{ search_query }}" 
+                           placeholder="Enter token name, symbol, or address..." 
+                           class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <select name="type" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                        <option value="name" {% if search_type == 'name' %}selected{% endif %}>Name/Symbol</option>
+                        <option value="address" {% if search_type == 'address' %}selected{% endif %}>Address</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-search mr-2"></i>Check Token
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results -->
+    {% if search_query %}
+        {% if error_message %}
+        <!-- Error Message -->
+        <div class="bg-red-900 border border-red-700 rounded-lg p-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-400 text-xl mr-3"></i>
+                <p class="text-red-300">{{ error_message }}</p>
+            </div>
+        </div>
+        {% elif token %}
+        <!-- Token Found -->
+        <div class="space-y-6">
+            <!-- Token Header -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        {% if token.image_url %}
+                        <img src="{{ token.image_url }}" alt="{{ token.name }}" class="w-16 h-16 rounded-full">
+                        {% endif %}
+                        <div>
+                            <h2 class="text-3xl font-bold">{{ token.name }}</h2>
+                            <p class="text-gray-400 text-lg">{{ token.symbol }}</p>
+                            {% if token.chain_id %}<p class="text-sm text-blue-400">{{ token.chain_id|upper }}</p>{% endif %}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold">${{ token.price_usd|floatformat:6 }}</p>
+                        <p class="{% if token.price_change_24h >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                            {% if token.price_change_24h >= 0 %}+{% endif %}{{ token.price_change_24h|floatformat:2 }}% (24h)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Result -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-2xl font-bold">Analysis Result</h3>
+                    <div class="flex items-center space-x-4">
+                        {% if from_database %}
+                        <span class="text-sm text-gray-400">
+                            <i class="fas fa-database mr-1"></i>From Database ({{ token.updated_at|timesince }} ago)
+                        </span>
+                        <button onclick="updateToken({{ token.id }})" 
+                                class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+                            <i class="fas fa-sync-alt mr-1"></i>Update
+                        </button>
+                        {% else %}
+                        <span class="text-sm text-green-400">
+                            <i class="fas fa-cloud mr-1"></i>Fresh from API
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="px-6 py-3 rounded-lg text-xl font-bold
+                            {% if token.recommendation == 'BUY' %}bg-green-600 text-white
+                            {% elif token.recommendation == 'HOLD' %}bg-yellow-600 text-white
+                            {% else %}bg-red-600 text-white{% endif %}">
+                            {{ token.recommendation }}
+                        </span>
+                        <p class="text-gray-400 mt-2">
+                            {% if token.recommendation == 'BUY' %}
+                                Strong fundamentals and positive momentum detected
+                            {% elif token.recommendation == 'HOLD' %}
+                                Decent metrics but proceed with caution
+                            {% else %}
+                                Poor fundamentals or high risk factors detected
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-bold text-blue-400">{{ token.analysis_score }}/100</p>
+                        <p class="text-gray-400">Analysis Score</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h4 class="text-gray-400 text-sm mb-2">Market Cap</h4>
+                    <p class="text-xl font-bold">${{ token.market_cap|floatformat:0|intcomma }}</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h4 class="text-gray-400 text-sm mb-2">24h Volume</h4>
+                    <p class="text-xl font-bold">${{ token.volume_24h|floatformat:0|intcomma }}</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h4 class="text-gray-400 text-sm mb-2">Liquidity</h4>
+                    <p class="text-xl font-bold">${{ token.liquidity|floatformat:0|intcomma }}</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h4 class="text-gray-400 text-sm mb-2">Volatility</h4>
+                    <p class="text-xl font-bold">{{ token.volatility_index|floatformat:2 }}%</p>
+                </div>
+            </div>
+
+            <!-- Risk Management -->
+            {% if token.recommendation == 'BUY' %}
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Risk Management Suggestions</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-2">Stop Loss Level</h4>
+                        <p class="text-xl text-red-400">${{ token.stop_loss_level|floatformat:6 }}</p>
+                        <p class="text-gray-400 text-sm">10% below current price</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Suggested Position Size</h4>
+                        <p class="text-xl text-green-400">{{ token.suggested_position_size }}%</p>
+                        <p class="text-gray-400 text-sm">Of total portfolio</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- View Full Details -->
+            <div class="text-center">
+                <a href="{% url 'dex_token:detail' token.id %}" 
+                   class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                    <i class="fas fa-chart-line mr-2"></i>View Full Analysis
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Instructions -->
+    {% if not search_query %}
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h3 class="text-xl font-bold mb-4">How to Use Token Checker</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold mb-2 text-blue-400">Search by Name/Symbol</h4>
+                <p class="text-gray-400 text-sm">Enter the token name (e.g., "Bitcoin") or symbol (e.g., "BTC") to find and analyze the token.</p>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-2 text-green-400">Search by Address</h4>
+                <p class="text-gray-400 text-sm">Enter the token contract address or pair address for precise token identification.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function updateToken(tokenId) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Updating...';
+    button.disabled = true;
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    fetch(`/api/update-token/${tokenId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating token: ' + (data.error || 'Unknown error'));
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        alert('Error updating token: ' + error.message);
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard - DEX Trading Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-4xl font-bold mb-4">DEX Trading Dashboard</h1>
+        <p class="text-gray-400">Real-time token analysis and recommendations</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-800 rounded-lg p-6">
+            <div class="flex items-center">
+                <i class="fas fa-coins text-blue-400 text-2xl mr-4"></i>
+                <div>
+                    <p class="text-gray-400">Total Tokens</p>
+                    <p class="text-2xl font-bold">{{ total_tokens }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-6">
+            <div class="flex items-center">
+                <i class="fas fa-arrow-up text-green-400 text-2xl mr-4"></i>
+                <div>
+                    <p class="text-gray-400">Buy Recommendations</p>
+                    <p class="text-2xl font-bold text-green-400">{{ buy_recommendations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-6">
+            <div class="flex items-center">
+                <i class="fas fa-chart-line text-purple-400 text-2xl mr-4"></i>
+                <div>
+                    <p class="text-gray-400">Active Analysis</p>
+                    <p class="text-2xl font-bold">Live</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Tokens -->
+    <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">Top Buy Recommendations</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-700">
+                        <th class="text-left py-3">Token</th>
+                        <th class="text-left py-3">Price</th>
+                        <th class="text-left py-3">24h Change</th>
+                        <th class="text-left py-3">Volume</th>
+                        <th class="text-left py-3">Score</th>
+                        <th class="text-left py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for token in top_tokens %}
+                    <tr class="border-b border-gray-700 hover:bg-gray-700">
+                        <td class="py-3">
+                            <div>
+                                <p class="font-semibold">{{ token.name }}</p>
+                                <p class="text-gray-400 text-sm">{{ token.symbol }}</p>
+                            </div>
+                        </td>
+                        <td class="py-3">${{ token.price_usd|floatformat:6 }}</td>
+                        <td class="py-3">
+                            <span class="{% if token.price_change_24h >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                                {{ token.price_change_24h|floatformat:2 }}%
+                            </span>
+                        </td>
+                        <td class="py-3">${{ token.volume_24h|floatformat:0|intcomma }}</td>
+                        <td class="py-3">
+                            <span class="bg-blue-600 px-2 py-1 rounded text-sm">{{ token.analysis_score }}</span>
+                        </td>
+                        <td class="py-3">
+                            <a href="{% url 'dex_token:detail' token.id %}" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-gray-400">
+                            No tokens available. <a href="#" onclick="updateTokens()" class="text-blue-400 hover:underline">Update data</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-xl font-bold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <button onclick="updateTokens()" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded">
+                    <i class="fas fa-sync-alt mr-2"></i>Update Token Data
+                </button>
+                <a href="{% url 'dex_token:explorer' %}" class="block w-full bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded text-center">
+                    <i class="fas fa-search mr-2"></i>Explore All Tokens
+                </a>
+            </div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-xl font-bold mb-4">Market Overview</h3>
+            <div style="height: 200px;">
+                <canvas id="marketChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateTokens() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch('/api/update-tokens/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Updated ${data.updated_count} tokens successfully!`);
+                location.reload();
+            } else {
+                alert('Error updating tokens: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error updating tokens: ' + error.message);
+        });
+    }
+
+    // Market overview chart with real data
+    const ctx = document.getElementById('marketChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Buy', 'Hold', 'Avoid'],
+            datasets: [{
+                data: [{{ buy_recommendations }}, {{ hold_recommendations }}, {{ avoid_recommendations }}],
+                backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: 'white',
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

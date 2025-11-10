@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}About - DEX Trading Assistant{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold mb-4">About DEX Trading Assistant</h1>
+        <p class="text-xl text-gray-400">AI-powered cryptocurrency analysis and recommendations</p>
+    </div>
+
+    <!-- How It Works -->
+    <div class="bg-gray-800 rounded-lg p-8">
+        <h2 class="text-3xl font-bold mb-6">How It Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="bg-blue-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-download text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Data Collection</h3>
+                <p class="text-gray-400">We fetch real-time data from Dexscreener API, including price, volume, liquidity, and market cap information.</p>
+            </div>
+            <div class="text-center">
+                <div class="bg-purple-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-brain text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">AI Analysis</h3>
+                <p class="text-gray-400">Our algorithm analyzes multiple metrics to calculate a comprehensive score for each token.</p>
+            </div>
+            <div class="text-center">
+                <div class="bg-green-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-line text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Recommendations</h3>
+                <p class="text-gray-400">Based on the analysis, we provide Buy, Hold, or Avoid recommendations with risk management guidance.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Methodology -->
+    <div class="bg-gray-800 rounded-lg p-8">
+        <h2 class="text-3xl font-bold mb-6">Analysis Methodology</h2>
+        <div class="space-y-6">
+            <div>
+                <h3 class="text-xl font-bold mb-3">Scoring System (0-100 points)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-blue-400 mb-2">Volume Analysis (30 points)</h4>
+                        <ul class="text-gray-400 space-y-1">
+                            <li>• >$1M volume: 30 points</li>
+                            <li>• >$100K volume: 20 points</li>
+                            <li>• >$10K volume: 10 points</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-green-400 mb-2">Price Movement (25 points)</h4>
+                        <ul class="text-gray-400 space-y-1">
+                            <li>• 0-20% gain: 25 points</li>
+                            <li>• Small loss (-5-0%): 15 points</li>
+                            <li>• High volatility (>20%): 5 points</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-purple-400 mb-2">Liquidity (25 points)</h4>
+                        <ul class="text-gray-400 space-y-1">
+                            <li>• >$500K liquidity: 25 points</li>
+                            <li>• >$100K liquidity: 15 points</li>
+                            <li>• >$50K liquidity: 10 points</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-yellow-400 mb-2">Market Cap (20 points)</h4>
+                        <ul class="text-gray-400 space-y-1">
+                            <li>• $1M-$100M: 20 points</li>
+                            <li>• >$100M: 15 points</li>
+                            <li>• >$100K: 10 points</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-bold mb-3">Recommendation Logic</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-green-900 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-400 mb-2">BUY (Score ≥70)</h4>
+                        <p class="text-gray-300 text-sm">High-quality tokens with strong fundamentals and positive momentum.</p>
+                    </div>
+                    <div class="bg-yellow-900 rounded-lg p-4">
+                        <h4 class="font-semibold text-yellow-400 mb-2">HOLD (Score 40-69)</h4>
+                        <p class="text-gray-300 text-sm">Decent tokens that may be worth monitoring or holding existing positions.</p>
+                    </div>
+                    <div class="bg-red-900 rounded-lg p-4">
+                        <h4 class="font-semibold text-red-400 mb-2">AVOID (Score <40)</h4>
+                        <p class="text-gray-300 text-sm">Tokens with poor fundamentals or high risk factors.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Management -->
+    <div class="bg-gray-800 rounded-lg p-8">
+        <h2 class="text-3xl font-bold mb-6">Risk Management Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-xl font-bold mb-4">Volatility Index</h3>
+                <p class="text-gray-400 mb-4">
+                    We calculate a volatility index based on price movements across different timeframes (1h, 6h, 24h) 
+                    to help you understand the risk level of each token.
+                </p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Position Sizing</h3>
+                <p class="text-gray-400 mb-4">
+                    Our system suggests position sizes based on the recommendation strength and risk profile, 
+                    typically 2-5% of portfolio for individual positions.
+                </p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Stop Loss Levels</h3>
+                <p class="text-gray-400 mb-4">
+                    For BUY recommendations, we calculate suggested stop-loss levels (typically 10% below entry) 
+                    to help limit potential losses.
+                </p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Real-time Updates</h3>
+                <p class="text-gray-400 mb-4">
+                    Token data is updated every 5 minutes automatically, ensuring you have the latest information 
+                    for making informed decisions.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="bg-red-900 border border-red-700 rounded-lg p-8">
+        <h2 class="text-2xl font-bold mb-4 text-red-400">Important Disclaimer</h2>
+        <div class="space-y-4 text-gray-300">
+            <p>
+                <strong>This is not financial advice.</strong> The DEX Trading Assistant is an educational tool that provides 
+                algorithmic analysis of cryptocurrency tokens based on publicly available data.
+            </p>
+            <p>
+                Cryptocurrency trading involves substantial risk of loss and is not suitable for all investors. 
+                Past performance does not guarantee future results. You should carefully consider your investment 
+                objectives, level of experience, and risk appetite.
+            </p>
+            <p>
+                Always conduct your own research and consider consulting with a qualified financial advisor before 
+                making any investment decisions. Never invest more than you can afford to lose.
+            </p>
+        </div>
+    </div>
+
+    <!-- Technical Details -->
+    <div class="bg-gray-800 rounded-lg p-8">
+        <h2 class="text-3xl font-bold mb-6">Technical Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-xl font-bold mb-4">Technology Stack</h3>
+                <ul class="text-gray-400 space-y-2">
+                    <li>• <strong>Backend:</strong> Django + Django REST Framework</li>
+                    <li>• <strong>Database:</strong> SQLite/PostgreSQL</li>
+                    <li>• <strong>API:</strong> Dexscreener API</li>
+                    <li>• <strong>Frontend:</strong> HTML, TailwindCSS, Chart.js</li>
+                    <li>• <strong>Caching:</strong> Django Cache Framework</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Data Sources</h3>
+                <ul class="text-gray-400 space-y-2">
+                    <li>• <strong>Primary:</strong> Dexscreener API</li>
+                    <li>• <strong>Coverage:</strong> Ethereum, BSC, Polygon, and more</li>
+                    <li>• <strong>Update Frequency:</strong> Every 5 minutes</li>
+                    <li>• <strong>Data Points:</strong> Price, Volume, Liquidity, Market Cap</li>
+                    <li>• <strong>Analysis:</strong> Real-time algorithmic scoring</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Token Explorer - DEX Trading Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold">Token Explorer</h1>
+        <div class="flex space-x-4">
+            <input type="text" id="searchInput" placeholder="Search tokens..." 
+                   class="bg-gray-800 border border-gray-600 rounded px-4 py-2 w-64">
+            <select id="filterSelect" class="bg-gray-800 border border-gray-600 rounded px-4 py-2">
+                <option value="">All Recommendations</option>
+                <option value="BUY">Buy</option>
+                <option value="HOLD">Hold</option>
+                <option value="AVOID">Avoid</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full" id="tokensTable">
+                <thead class="bg-gray-700">
+                    <tr>
+                        <th class="text-left py-4 px-6 cursor-pointer" onclick="sortTable(0)">
+                            Token <i class="fas fa-sort ml-1"></i>
+                        </th>
+                        <th class="text-left py-4 px-6 cursor-pointer" onclick="sortTable(1)">
+                            Price <i class="fas fa-sort ml-1"></i>
+                        </th>
+                        <th class="text-left py-4 px-6 cursor-pointer" onclick="sortTable(2)">
+                            24h Change <i class="fas fa-sort ml-1"></i>
+                        </th>
+                        <th class="text-left py-4 px-6 cursor-pointer" onclick="sortTable(3)">
+                            Volume <i class="fas fa-sort ml-1"></i>
+                        </th>
+                        <th class="text-left py-4 px-6 cursor-pointer" onclick="sortTable(4)">
+                            Market Cap <i class="fas fa-sort ml-1"></i>
+                        </th>
+                        <th class="text-left py-4 px-6 cursor-pointer" onclick="sortTable(5)">
+                            Score <i class="fas fa-sort ml-1"></i>
+                        </th>
+                        <th class="text-left py-4 px-6">Recommendation</th>
+                        <th class="text-left py-4 px-6">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for token in tokens %}
+                    <tr class="border-b border-gray-700 hover:bg-gray-700 transition">
+                        <td class="py-4 px-6">
+                            <div>
+                                <p class="font-semibold">{{ token.name }}</p>
+                                <p class="text-gray-400 text-sm">{{ token.symbol }}</p>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">${{ token.price_usd|floatformat:6 }}</td>
+                        <td class="py-4 px-6">
+                            <span class="{% if token.price_change_24h >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                                {% if token.price_change_24h >= 0 %}+{% endif %}{{ token.price_change_24h|floatformat:2 }}%
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">${{ token.volume_24h|floatformat:0|intcomma }}</td>
+                        <td class="py-4 px-6">${{ token.market_cap|floatformat:0|intcomma }}</td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-16 bg-gray-600 rounded-full h-2 mr-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ token.analysis_score }}%"></div>
+                                </div>
+                                <span class="text-sm">{{ token.analysis_score }}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 rounded text-xs font-semibold
+                                {% if token.recommendation == 'BUY' %}bg-green-600
+                                {% elif token.recommendation == 'HOLD' %}bg-yellow-600
+                                {% else %}bg-red-600{% endif %}">
+                                {{ token.recommendation }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <a href="{% url 'dex_token:detail' token.id %}" 
+                               class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-gray-400">
+                            No tokens found. Try updating the data or adjusting your filters.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#tokensTable tbody tr');
+        
+        rows.forEach(row => {
+            const tokenName = row.cells[0].textContent.toLowerCase();
+            if (tokenName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Filter functionality
+    document.getElementById('filterSelect').addEventListener('change', function() {
+        const filterValue = this.value;
+        const rows = document.querySelectorAll('#tokensTable tbody tr');
+        
+        rows.forEach(row => {
+            if (row.cells.length > 6) {
+                const recommendation = row.cells[6].textContent.trim();
+                if (!filterValue || recommendation === filterValue) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+
+    // Simple table sorting
+    function sortTable(columnIndex) {
+        const table = document.getElementById('tokensTable');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        rows.sort((a, b) => {
+            const aValue = a.cells[columnIndex].textContent.trim();
+            const bValue = b.cells[columnIndex].textContent.trim();
+            
+            // Try to parse as numbers
+            const aNum = parseFloat(aValue.replace(/[$,%]/g, ''));
+            const bNum = parseFloat(bValue.replace(/[$,%]/g, ''));
+            
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return bNum - aNum; // Descending order for numbers
+            }
+            
+            return aValue.localeCompare(bValue);
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+    }
+</script>
+{% endblock %}
