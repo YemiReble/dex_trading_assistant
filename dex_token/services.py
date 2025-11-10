@@ -199,7 +199,6 @@ def update_tokens_from_api():
     for pair_data in data['pairs'][:50]:  # Limit to 50 tokens
         try:
             base_token = pair_data.get('baseToken', {})
-            print(base_token)
             if not base_token.get('address'):
                 continue
             
@@ -229,15 +228,15 @@ def update_tokens_from_api():
                     'token_address': base_token.get('address'),
                     'chain_id': pair_data.get('chainId'),
                     'dex_id': pair_data.get('dexId'),
-                    'price_usd': Decimal(str(pair_data.get('priceUsd', 0))),
-                    'price_native': Decimal(str(pair_data.get('priceNative', 0))),
+                    'price_usd': safe_decimal(pair_data.get('priceUsd', 0)),
+                    'price_native': safe_decimal(pair_data.get('priceNative', 0)),
                     'market_cap': int(float(pair_data.get('marketCap', 0))),
                     'fdv': int(float(pair_data.get('fdv', 0))) if pair_data.get('fdv') else None,
                     'volume_24h': int(float(pair_data.get('volume', {}).get('h24', 0))),
                     'liquidity': int(float(pair_data.get('liquidity', {}).get('usd', 0))),
-                    'price_change_24h': Decimal(str(price_change_24h)),
-                    'price_change_1h': Decimal(str(pair_data.get('priceChange', {}).get('h1', 0))),
-                    'price_change_7d': Decimal(str(pair_data.get('priceChange', {}).get('h7d', 0))),
+                    'price_change_24h': safe_decimal(price_change_24h),
+                    'price_change_1h': safe_decimal(pair_data.get('priceChange', {}).get('h1', 0)),
+                    'price_change_7d': safe_decimal(pair_data.get('priceChange', {}).get('h7d', 0)),
                     'buys_24h': txns_24h.get('buys'),
                     'sells_24h': txns_24h.get('sells'),
                     'image_url': info.get('imageUrl'),
@@ -247,10 +246,10 @@ def update_tokens_from_api():
                     'discord_handle': discord,
                     'pair_created_at': datetime.fromtimestamp(pair_data.get('pairCreatedAt', 0) / 1000, tz=pytz.UTC) if pair_data.get('pairCreatedAt') else None,
                     'recommendation': recommendation,
-                    'analysis_score': Decimal(str(score)),
-                    'volatility_index': Decimal(str(volatility)),
-                    'stop_loss_level': Decimal(str(float(pair_data.get('priceUsd', 0)) * 0.9)),
-                    'suggested_position_size': Decimal('5.0') if recommendation == 'BUY' else Decimal('2.0'),
+                    'analysis_score': safe_decimal(score),
+                    'volatility_index': safe_decimal(volatility),
+                    'stop_loss_level': safe_decimal(float(pair_data.get('priceUsd', 0)) * 0.9),
+                    'suggested_position_size': safe_decimal('5.0') if recommendation == 'BUY' else safe_decimal('2.0'),
                 }
             )
             updated_count += 1

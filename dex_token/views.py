@@ -35,8 +35,7 @@ class RecommendationsAPIView(generics.ListAPIView):
 @csrf_exempt
 def update_tokens(request):
     """Manually trigger token data update"""
-    print(request)
-    print("Calling Update all Token...")
+
     try:
         count = update_tokens_from_api()
         return Response({'success': True, 'updated_count': count})
@@ -159,9 +158,8 @@ def token_checker(request):
 @csrf_exempt
 def update_single_token(request, token_id):
     """Update a single token from API"""
-    print("Calling Update Single Token...")
+
     try:
-        print("Token Update Request:", token_id)
         token = get_object_or_404(Token, id=token_id)
         from .services import fetch_and_analyze_token
         
